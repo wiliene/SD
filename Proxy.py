@@ -10,7 +10,7 @@ class Proxy:
             "task": task
         }
         self.client.send_request(request)
-        response = self.client.receive_request()
+        response = self.client.receive_response(request)
         print(f"Resposta recebida: {response}")
         return response.get('taskId')  # Retorna o ID da tarefa criada
 
@@ -21,7 +21,7 @@ class Proxy:
             "task": task
         }
         self.client.send_request(request)
-        response = self.client.receive_request()
+        response = self.client.receive_response(request)
         print(f"Resposta recebida: {response}")
         return response
 
@@ -31,7 +31,7 @@ class Proxy:
             "task_id": task_id
         }
         self.client.send_request(request)
-        response = self.client.receive_request()
+        response = self.client.receive_response(request)
         print(f"Resposta recebida: {response}")
         return response
 
@@ -40,7 +40,7 @@ class Proxy:
             "action": "listar_tarefas"
         }
         self.client.send_request(request)
-        response = self.client.receive_request()
+        response = self.client.receive_response(request)
         print(f"Resposta recebida: {response}")
         return response.get('tarefas', [])  # Retorna uma lista de tarefas
 
