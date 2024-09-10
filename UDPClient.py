@@ -9,7 +9,7 @@ class UDPClient:
         self.max_retries = max_retries
 
     def create_request(self, obj_reference, method_id, args, t, id_value):
-       
+        # Cria um dicionário representando uma requisição
         return {
             "ObjReference": obj_reference,
             "MethodID": method_id,
@@ -20,16 +20,12 @@ class UDPClient:
         }
 
     def send_request(self, request):
-        
-        #Envia uma requisição JSON para o servidor via UDP.
-        
+        # Envia uma requisição JSON para o servidor via UDP.
         json_request = json.dumps(request)
         self.socket.sendto(json_request.encode(), self.server_address)
 
     def receive_response(self, request):
-        
-        #Tenta receber uma resposta JSON do servidor via UDP, com tratamento de timeout e reenvio.
-        
+        # Tenta receber uma resposta JSON do servidor via UDP, com tratamento de timeout e reenvio.
         retries = 0
         while retries < self.max_retries:
             try:
@@ -45,16 +41,14 @@ class UDPClient:
         return None  # Retorna None se o número máximo de tentativas for alcançado
 
     def close(self):
-        """
-        Fecha o socket UDP.
-        """
+        # Fecha o socket UDP.
         self.socket.close()
 
 
 if __name__ == "__main__":
     client = UDPClient('localhost', 12345)
 
-    # Exemplo de criação e envio de uma requisição 'Insert'
+    
     task = {
         "id": 1,
         "name": "Exemplo de Tarefa",
