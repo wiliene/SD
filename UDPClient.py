@@ -1,67 +1,114 @@
 import socket
 import json
+import base64
+from datetime import datetime, timezone
 
-# Define a classe Task para representar uma tarefa
-class Task:
-    def __init__(self, titulo, descricao, data):
-        self.titulo = titulo
-        self.descricao = descricao
-        self.data = data
-
-    def to_dict(self):
-        return {
-            "titulo": self.titulo,
-            "descricao": self.descricao,
-            "data": self.data
-        }
-
-# Define a classe RequestMessage para representar uma mensagem de requisição
-class RequestMessage:
-    def __init__(self, obj_reference, method_id, args, t, id_value):
-        self.ObjReference = obj_reference
-        self.MethodID = method_id
-        self.Args = args
-        self.T = t
-        self.ID = id_value
-        self.StatusCode = 202
-
-    def to_json(self):
-        # Converte o objeto em um dicionário e depois em uma string JSON
-        return json.dumps(self.__dict__)
 
 class UDPClient:
-    def __init__(self, hostname, port, timeout=5, max_retries=3):
+    def __init__(self, hostname, port, max_retries=3):
         self.server_address = (hostname, port)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.settimeout(timeout)  # Define o timeout para o socket
+        self.socket.settimeout(None)  # Remove o timeout
         self.max_retries = max_retries
 
-    def send_request(self, request_message):
-        # Converte a mensagem para JSON e depois para bytes
-        json_request = request_message.to_json()
-        byte_request = json_request.encode('utf-8')  # Converte para array de bytes
+    def send_request(self, request_bytes):
+        # Envia a requisição para o servidor
+        self.socket.sendto(request_bytes, self.server_address)
 
-        # Envia a mensagem em formato de bytes para o servidor
-        self.socket.sendto(byte_request, self.server_address)
-
-    def receive_response(self, request_message):
-        # Tenta receber uma resposta JSON do servidor via UDP, com tratamento de timeout e reenvio.
+    def receive_response(self):
         retries = 0
         while retries < self.max_retries:
             try:
                 packet, _ = self.socket.recvfrom(4096)
-                json_response = packet.decode()  # Decodifica de volta para string
-                return json.loads(json_response)  # Converte a string JSON de volta para objeto Python
+                return json.loads(packet.decode())
             except socket.timeout:
                 retries += 1
                 print(f"Timeout! Tentativa {retries} de {self.max_retries}. Reenviando a mensagem...")
-                self.send_request(request_message)  # Reenvia a mensagem
 
         print("Erro: Número máximo de tentativas alcançado. Falha na comunicação com o servidor.")
-        return None  # Retorna None se o número máximo de tentativas for alcançado
+        return None
 
     def close(self):
-        # Fecha o socket UDP.
         self.socket.close()
 
+def create_request(title, description, date=None):
+    # Cria a estrutura da requisição, com data opcional.
+    if date is None:
+        date = datetime.now(timezone.utc).isoformat()  # Formato RFC3339 com fuso horário
+    
+    request = {
+        "date": date,
+        "title": title,
+        "description": description
+    }
+    
+    # Serializa a requisição para JSON e converte para bytes
+    request_json = json.dumps(request)
+    request_bytes = request_json.encode('utf-8')
 
+    return request_bytes
+
+class Message:
+    def __init__(self, obj_reference, method_id, request_bytes, t, id_value):
+        self.obj_reference = obj_reference
+        self.method_id = method_id
+        self.args = base64.b64encode(request_bytes).decode('utf-8')  # Codifica bytes em base64
+        self.t = t
+        self.id_value = id_value
+        self.status_code = 0
+
+    def to_bytes(self):
+        # Cria a mensagem
+        message = {
+            "ObjReference": self.obj_reference,
+            "MethodID": self.method_id,
+            "Args": self.args,
+            "T": self.t,
+            "ID": self.id_value,
+            "StatusCode": self.status_code
+        }
+        
+        # Serializa a mensagem inteira em JSON e converte para bytes
+        json_message = json.dumps(message)
+        return json_message.encode('utf-8')
+
+def main():
+    client = UDPClient('localhost', 12345)
+
+    # Cria uma requisição para enviar
+    request = create_request("Estudar Python", "Revisar conceitos de sockets e JSON")
+
+    # Cria um objeto Message com a requisição convertida em bytes
+    message = Message("Task", "InsertTask", request, 1, 1001)
+
+    # Envia a mensagem para o servidor
+    client.send_request(message.to_bytes())
+
+    # Recebe a resposta do servidor
+    response = client.receive_response()
+    if response:
+        print("Resposta do Servidor:")
+        
+        # Desserializa a resposta JSON
+        response_json = json.loads(json.dumps(response))
+        
+        # Converte o campo base64 'Args' de volta para bytes
+        args_base64 = response_json.get('Args', '')
+        args_bytes = base64.b64decode(args_base64)
+        
+        # Desserializa os bytes para um dicionário Python
+        request_data = json.loads(args_bytes.decode('utf-8'))
+        
+        # Imprime o conteúdo da resposta
+        print("ObjReference:", response_json.get('ObjReference'))
+        print("MethodID:", response_json.get('MethodID'))
+        print("Args:", request_data)  # Exibe os dados da requisição
+        print("T:", response_json.get('T'))
+        print("ID:", response_json.get('ID'))
+        print("StatusCode:", response_json.get('StatusCode'))
+
+    # Fecha o cliente
+    client.close()
+
+if __name__ == "__main__":
+    main()
