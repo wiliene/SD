@@ -60,7 +60,6 @@ def main():
                     continue
 
                 # Verifica se o ID existe
-                tarefas = proxy.listar_tarefas()
                 if not id_existe(task_id, tarefas):
                     print(f"Erro: Tarefa com ID {task_id} não encontrada.")
                     continue
@@ -90,7 +89,6 @@ def main():
                     continue
 
                 # Verifica se o ID existe
-                tarefas = proxy.listar_tarefas()
                 if not id_existe(task_id, tarefas):
                     print(f"Erro: Tarefa com ID {task_id} não encontrada.")
                     continue
