@@ -10,7 +10,7 @@ class Proxy:
             obj_reference="db",  # Supondo que o obj_reference seja "db"
             method_id=action,    # O método é o nome da ação
             args=params,         # Passa os parâmetros como argumento
-            t=0,                 # Pode ajustar esse valor conforme a lógica do seu sistema
+            t=1,                 # Pode ajustar esse valor conforme a lógica do seu sistema
             id_value=1           # Exemplo: ID fixo, ou você pode gerar dinamicamente
         )
         
@@ -22,24 +22,24 @@ class Proxy:
         print(f"Resposta recebida: {response}")
         return response
 
-    def adicionar_tarefa(self, task):
+    def InsertTask(self, task):
         # Adicionar uma tarefa
-        response = self.do_operation("adicionar_tarefa", task=task)
+        response = self.do_operation("InsertTask", task=task)
         return response.get('taskId')  # Retorna o ID da tarefa criada
 
-    def editar_tarefa(self, task_id, task):
+    def GetTaskById(self, task_id, task):
         # Editar uma tarefa
-        response = self.do_operation("editar_tarefa", task_id=task_id, task=task)
+        response = self.do_operation("GetTaskById", task_id=task_id, task=task)
         return response
 
-    def remover_tarefa(self, task_id):
+    def RemoveTask(self, task_id):
         # Remover uma tarefa
-        response = self.do_operation("remover_tarefa", task_id=task_id)
+        response = self.do_operation("RemoveTask", task_id=task_id)
         return response
 
-    def listar_tarefas(self):
+    def GetAllTasks(self):
         # Listar tarefas
-        response = self.do_operation("listar_tarefas")
+        response = self.do_operation("GetAllTasks")
         return response.get('tarefas', [])  # Retorna uma lista de tarefas
 
     def close(self):
