@@ -65,28 +65,3 @@ class UDPClient:
         self.socket.close()
 
 
-if __name__ == "__main__":
-    client = UDPClient('localhost', 12345)
-
-    # Exemplo de criação e envio de uma requisição 'Insert'
-    tasks = [
-        Task("Exemplo de Tarefa 1", "Descrição da Tarefa 1", "2024-09-15"),
-        Task("Exemplo de Tarefa 2", "Descrição da Tarefa 2", "2024-10-01")
-    ]
-    
-    # Converte a lista de tarefas em uma lista de dicionários
-    tasks_dict = [task.to_dict() for task in tasks]
-    
-    # Cria uma instância de RequestMessage com os dados
-    request_message = RequestMessage("db", "InsertTask", tasks_dict, 1, 9223372036854775806)
-    
-    # Envia a requisição
-    client.send_request(request_message)
-
-    # Recebe a resposta do servidor
-    response = client.receive_response(request_message)
-    if response:
-        print("Resposta do Servidor:", response)
-
-    # Fecha o cliente
-    client.close()
