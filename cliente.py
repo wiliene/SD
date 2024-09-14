@@ -46,7 +46,7 @@ def main():
                     continue
 
                 task = {'titulo': titulo, 'descricao': descricao, 'data_vencimento': data_vencimento}
-                response = proxy.adicionar_tarefa(task)
+                response = proxy.InsertTask(task)
                 print(f"Tarefa criada com ID: {response}")
 
             elif opcao == '2':
@@ -76,7 +76,7 @@ def main():
                     continue
 
                 task = {'titulo': titulo, 'descricao': descricao, 'data_vencimento': data_vencimento}
-                response = proxy.editar_tarefa(task_id, task)
+                response = proxy.GetTaskById(task_id, task)
                 print(f"Tarefa {task_id} editada com sucesso.")
 
             elif opcao == '3':
@@ -95,11 +95,11 @@ def main():
                     print(f"Erro: Tarefa com ID {task_id} não encontrada.")
                     continue
 
-                response = proxy.remover_tarefa(task_id)
+                response = proxy.RemoveTask(task_id)
                 print(f"Tarefa {task_id} removida com sucesso.")
 
             elif opcao == '4':
-                tarefas = proxy.listar_tarefas()
+                tarefas = proxy.GetAllTasks()
                 print("Tarefas cadastradas:")
                 for tarefa in tarefas:
                     print(f"ID: {tarefa['id']}, Título: {tarefa['titulo']}, Descrição: {tarefa['descricao']}, Data de Vencimento: {tarefa['data_vencimento']}")
